@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 "use client";
 import AdminLayout from '../../components/AdminLayout';
 import { useEffect, useState } from 'react';
