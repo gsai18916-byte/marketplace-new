@@ -163,8 +163,6 @@ export default function ProductPage({ product }) {
     <Layout title={`${product.title} — Luminance`}>
       {showBuyModal && (
         <>
-          <script src="https://checkout.razorpay.com/v1/checkout.js" />
-          <BuyModal product={product} onClose={() => setShowBuyModal(false)} />
         </>
       )}
 
