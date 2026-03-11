@@ -1,6 +1,5 @@
-import { withAdmin } from '../../../lib/adminAuth';
-import { supabaseAdmin } from '../../../lib/supabaseAdmin';
-import { createFolder } from '../../../lib/storage';
+import { withAdmin } from '../../../../lib/adminAuth';
+import { supabaseAdmin } from '../../../../lib/supabaseAdmin';
 
 async function handler(req, res) {
   // GET — list categories
@@ -22,7 +21,7 @@ async function handler(req, res) {
       return res.status(400).json({ error: 'name, type and slug are required' });
     }
 
-    if (!['wallpaper', 'prompt'].includes(type)) {
+    if (!(['wallpaper', 'prompt'].includes(type))) {
       return res.status(400).json({ error: 'type must be wallpaper or prompt' });
     }
 
@@ -33,14 +32,6 @@ async function handler(req, res) {
       .single();
 
     if (error) return res.status(500).json({ error: error.message });
-
-    // Create storage folder
-    const folderPath = `${type === 'wallpaper' ? 'wallpapers' : 'prompts'}/${slug}`;
-    try {
-      await createFolder(folderPath);
-    } catch (storageErr) {
-      console.warn('Storage folder creation warning:', storageErr.message);
-    }
 
     return res.status(201).json({ category });
   }
