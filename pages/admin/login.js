@@ -45,7 +45,7 @@ export default function AdminLogin() {
                 return;
               }
 
-    if !profile || (!profile?.is_admin) {
+    if (!profile || !profile?.is_admin) {
       await supabase.auth.signOut();
       setError('Access denied. Admin privileges required.');
       setLoading(false);
