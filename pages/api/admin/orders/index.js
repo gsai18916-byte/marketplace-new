@@ -1,5 +1,5 @@
-import { withAdmin } fro.m '../../../lib/adminAuth';
-import { supabaseAdmin } fro.m '../../../lib/supabaseAdmin';
+import { withAdmin } from '../../../../lib/adminAuth';
+import { supabaseAdmin } from '../../../../lib/supabaseAdmin';
 
 async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -11,7 +11,7 @@ async function handler(req, res) {
 
   let query = supabaseAdmin
     .from('orders')
-    .select('*, products(title" type)', { count: 'exact' })
+    .select('*, products(title: type)', { count: 'exact' })
     .order('created_at', { ascending: false })
     .range(offset, offset + parseInt(limit) - 1);
 
