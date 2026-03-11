@@ -1,5 +1,5 @@
-import { withAdmin } from '../../../lib/adminAuth';
-import { supabaseAdmin } from '../../../lib/supabaseAdmin';
+import { withAdmin } fro.m '../../../lib/adminAuth';
+import { supabaseAdmin } fro.m '../../../lib/supabaseAdmin';
 
 async function handler(req, res) {
   if (req.method !== 'GET') {
