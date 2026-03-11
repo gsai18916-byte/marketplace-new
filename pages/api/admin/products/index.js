@@ -1,9 +1,9 @@
-import { withAdmin } from'../../../lib/adminAuth';
-import { supabaseAdmin } frm '../../../lib/supabaseAdmin';
+import { withAdmin } from '../../../../lib/adminAuth';
+import { supabaseAdmin } from '../../../../lib/supabaseAdmin';
 import formidable from 'formidable';
 import fs from 'fs';
-import { uploadFile, deleteFolder } fr '.../../../lib/storage';
-import { generateWallpaperZip, generatePromptZip }. fr '../../../lib/zipGenerator';
+import { uploadFile, deleteFolder } from '../../../../lib/storage';
+import { generateWallpaperZip, generatePromptZip } from '../../../../lib/zipGenerator';
 
 export const config = { api: { bodyParser: false } };
 
@@ -63,65 +63,45 @@ async function handler(req, res) {
       .single();
 
     if (catError || !category) {
-      return res.status(404).json({ error: 'Category not found' });
+      return res.status(400).json({ error: 'Invalid category_id' });
     }
 
-    const basePath = `${type === 'wallpaper' ? 'wallpapers' : 'prompts'}/${category.slug}/${slug}`;
-    const images = {};
+    const categorySlug = category.slug;
 
-    try {
-      if (type === 'wallpaper') {
-        const fileMap = { desktop: 'desktop.jpg', mobile: 'mobile.jpg', mockup_d: 'mockup-d.jpg', mockup_m: 'mockup-m.jpg' };
-        for (const [field, fileName] of Object.entries(fileMap)) {
-          const file = Array.isArray(files[field]) ? files[field][0] : files[field];
-          if (file) {
-            const buffer = fs.readFileSync(file.filepath);
-            await uploadFile(`${basePath}/${fileName}`, buffer, file.mimetype || 'image/jpeg');
-            images[field] = `${basePath}/${fileName}`;
-          }
-        }
-      } else {
-        const fileMap = { before: 'before.jpg', after: 'after.jpg' };
-        for (const [field, fileName] of Object.entries(fileMap)) {
-          const file = Array.isArray(files[field]) ? files[field][0] : files[field];
-          if (file) {
-            const buffer = fs.readFileSync(file.filepath);
-            await uploadFile(`${basePath}/${fileName}`, buffer, file.mimetype || 'image/jpeg');
-            images[field] = `${basePath}/${fileName}`;
-          }
-        }
-        const promptText = flatField(fields.prompt_text) || '';
-        await uploadFile(`${basePath}/prompt.txt`, Buffer.from(promptText), 'text/plain');
-        images.prompt_text = promptText;
-      }
-
-      // Generate ZIP
-      let zipPath;
-      if (type === 'wallpaper') {
-        zipPath = await generateWallpaperZip(category.slug, slug);
-      } else {
-        zipPath = await generatePromptZip(category.slug, slug);
-      }
-
-      const thumbnailUrl = flatField(fields.thumbnail_url) || null;
-
-      const { data: product, error } = await supabaseAdmin
-        .from('products')
-        .insert({
-          title, description, category_id: categoryId, type,
-          price_inr: priceInr, price_usd: priceUsd,
-          file_path: zipPath, thumbnail_url: thumbnailUrl,
-          images, active,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return res.status(201).json({ product });
-    } catch (err) {
-      console.error('Product create error:', err);
-      return res.status(500).json({ error: err.message });
+    // Upload thumbnail
+    let thumbnailPath = null;
+    if (files.thumbnail) {
+      const thumbFile = Array.isArray(files.thumbnail) ? files.thumbnail[0] : files.thumbnail;
+      thumbnailPath = await uploadFile(thumbFile, `products/${categorySlug}/${slug}`);
     }
+
+    // Upload files/zip
+    let filePath = null;
+    if (files.file) {
+      const fileToUpload = Array.isArray(files.file) ? files.file[0] : files.file;
+      filePath = await uploadFile(fileToUpload, `products/${categorySlug}/${slug}`);
+    }
+
+    // Insert product
+    const { data: newProduct, error: insertError } = await supabaseAdmin
+      .from('products')
+      .insert({
+        title,
+        description,
+        category_id: categoryId,
+        type,
+        price_inr: priceInr,
+        price_usd: priceUsd,
+        thumbnail: thumbnailPath,
+        file_path: filePath,
+        active,
+        slug
+      })
+      .select()
+      .single();
+
+    if (insertError) return res.status(500).json({ error: insertError.message });
+    return res.status(201).json({ product: newProduct });
   }
 
   return res.status(405).json({ error: 'Method not allowed' });
