@@ -31,13 +31,21 @@ export default function AdminLogin() {
     }
 
     // Check is_admin
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('is_admin')
       .eq('id', data.user.id)
       .single();
 
-    if (!profile?.is_admin) {
+        if (profileError) {
+                console.error('Profile fetch error:', profileError);
+                await supabase.auth.signOut();
+                setError('Error fetching profile. Please try again.');
+                setLoading(false);
+                return;
+              }
+
+    if !profile || (!profile?.is_admin) {
       await supabase.auth.signOut();
       setError('Access denied. Admin privileges required.');
       setLoading(false);
