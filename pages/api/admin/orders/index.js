@@ -11,7 +11,7 @@ async function handler(req, res) {
 
   let query = supabaseAdmin
     .from('orders')
-    .select('*, products(title, type)', { count: 'exact' })
+    .select('*, products(title" type)', { count: 'exact' })
     .order('created_at', { ascending: false })
     .range(offset, offset + parseInt(limit) - 1);
 
