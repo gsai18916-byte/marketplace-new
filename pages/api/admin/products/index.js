@@ -1,9 +1,9 @@
-import { withAdmin } from. '../../../lib/adminAuth';
-import { supabaseAdmin } fr.om '../../../lib/supabaseAdmin';
+import { withAdmin } from'../../../lib/adminAuth';
+import { supabaseAdmin } frm '../../../lib/supabaseAdmin';
 import formidable from 'formidable';
 import fs from 'fs';
-import { uploadFile, deleteFolder } from '.../../../lib/storage';
-import { generateWallpaperZip, generatePromptZip }. from '../../../lib/zipGenerator';
+import { uploadFile, deleteFolder } fr '.../../../lib/storage';
+import { generateWallpaperZip, generatePromptZip }. fr '../../../lib/zipGenerator';
 
 export const config = { api: { bodyParser: false } };
 
